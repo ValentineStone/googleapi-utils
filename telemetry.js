@@ -66,6 +66,31 @@ const udpToSerial = ({
   console.log
 )
 
+const loadEnv = async assignEnv =>
+  await require('./zipenv')('keys.zip', assignEnv).catch(async () => {
+    const fs = require('fs/promises')
+    const envData = await fs.readFile('.env')
+    const env = require('dotenv').parse(envData)
+    if (assignEnv)
+      Object.assign(process.env, env)
+    const [
+      credentialsData,
+      publicKey,
+      privateKey
+    ] = await Promise.all([
+      fs.readFile(env.GOOGLE_APPLICATION_CREDENTIALS),
+      fs.readFile(env.PUBLIC_KEY_FILE),
+      fs.readFile(env.PRIVATE_KEY_FILE),
+    ])
+    const credentials = JSON.parse(credentialsData)
+    return {
+      env,
+      publicKey,
+      privateKey,
+      credentials,
+    }
+  })
+
 if (require.main === module) {
   (async () => {
     const {
@@ -73,7 +98,7 @@ if (require.main === module) {
       publicKey,
       privateKey,
       credentials,
-    } = await require('./zipenv')('keys.zip', false)
+    } = await loadEnv(false)
     const mode = process.argv[2] || 'proxy'
     if (mode === 'proxy') {
       const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST

@@ -1,11 +1,8 @@
 'use strict'
-const jszip = require('jszip')
-const fs = require('fs')
-const dotenv = require('dotenv')
 
 const zipenv = async (zipFile, assignEnv = true) => {
-  const zip = await jszip.loadAsync(
-    fs.readFileSync(zipFile))
+  const zip = await require('jszip').loadAsync(
+    require('fs').readFileSync(zipFile))
   const files = {}
   for (const file in zip.files) {
     const parts = file.split('/')
@@ -24,7 +21,7 @@ const zipenv = async (zipFile, assignEnv = true) => {
     files['ec_public.pem'].async('nodebuffer'),
   ])
   const credentials = JSON.parse(credentialsData)
-  const env = dotenv.parse(envData)
+  const env = require('dotenv').parse(envData)
   if (assignEnv)
     Object.assign(process.env, env)
   return {
