@@ -66,6 +66,8 @@ const udpToSerial = ({
   console.log
 )
 
+const ignoreErrors = error => undefined
+
 const loadEnv = async assignEnv =>
   await require('./zipenv')('keys.zip', assignEnv).catch(async () => {
     const fs = require('fs/promises')
@@ -78,11 +80,11 @@ const loadEnv = async assignEnv =>
       publicKey,
       privateKey
     ] = await Promise.all([
-      fs.readFile(env.GOOGLE_APPLICATION_CREDENTIALS),
-      fs.readFile(env.PUBLIC_KEY_FILE),
-      fs.readFile(env.PRIVATE_KEY_FILE),
+      fs.readFile(env.GOOGLE_APPLICATION_CREDENTIALS).catch(ignoreErrors),
+      fs.readFile(env.PUBLIC_KEY_FILE).catch(ignoreErrors),
+      fs.readFile(env.PRIVATE_KEY_FILE).catch(ignoreErrors),
     ])
-    const credentials = JSON.parse(credentialsData)
+    const credentials = credentialsData && JSON.parse(credentialsData)
     return {
       env,
       publicKey,
