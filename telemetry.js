@@ -69,6 +69,32 @@ const udpToSerial = ({
   )
 )
 
+const udpToSerialMeasured = ({
+  udpHost,
+  udpPort,
+  serialPath,
+  serialBaudRate,
+  interval,
+  sendName,
+  recvName,
+}) => adapters.connect(
+  adapters.udp(
+    udpHost,
+    udpPort,
+    console.log
+  ),
+  adapters.measure(
+    adapters.serialport(
+      serialPath,
+      serialBaudRate,
+      console.log
+    ),
+    interval,
+    sendName,
+    recvName,
+  )
+)
+
 const ignoreErrors = error => undefined
 
 const loadEnv = async assignEnv =>
@@ -138,12 +164,27 @@ if (require.main === module) {
       const serialBaudRate = +(process.argv[4] || env.DEVICE_SERIAL_BAUD)
       const udpHost = process.argv[5] || env.DEVICE_UDP_HOST
       const udpPort = +(process.argv[6] || env.DEVICE_UDP_PORT)
-      udpToSerial({
-        udpHost,
-        udpPort,
-        serialPath,
-        serialBaudRate,
-      })
+      const interval = +process.argv[7] || undefined
+      const sendName = process.argv[8] || 'send'
+      const recvName = process.argv[9] || 'recv'
+      if (interval) {
+        udpToSerialMeasured({
+          udpHost,
+          udpPort,
+          serialPath,
+          serialBaudRate,
+          interval,
+          sendName,
+          recvName,
+        })
+      } else {
+        udpToSerial({
+          udpHost,
+          udpPort,
+          serialPath,
+          serialBaudRate,
+        })
+      }
     }
   })()
 }
