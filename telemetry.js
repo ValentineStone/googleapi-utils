@@ -98,24 +98,35 @@ const proxy = ({
   gcsPort,
   interval,
   buffer,
+  logRecv,
 }) => adapters.connect(
   adapters.udpProxy(
     gcsHost,
     gcsPort,
     console.log
   ),
-  adapters.throttle(
-    adapters.googleIoT({
-      mode: 'proxy',
-      publicKey,
-      privateKey,
-      cloudRegion,
-      credentials,
-      connected: console.log
-    }),
-    interval,
-    buffer,
-  )
+  adapters.transform(
+    adapters.throttle(
+      adapters.googleIoT({
+        mode: 'proxy',
+        publicKey,
+        privateKey,
+        cloudRegion,
+        credentials,
+        connected: console.log
+      }),
+      interval,
+      buffer,
+    ),
+    recv => buff => {
+      if (logRecv) console.log(
+        logRecv,
+        buff.length,
+        ...(buff.length ? ['< ' + buff[0].toString(16) + ' ... >'] : [])
+      )
+      recv(buff)
+    }
+  ),
 )
 
 const udpToSerial = ({
@@ -241,6 +252,13 @@ if (require.main === module) {
     else if (mode === 'proxy') {
       const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST
       const gcsPort = process.argv[4] || +env.PROXY_UDP_GCS_PORT
+      const logRecv = (process.argv[5] === undefined
+        ? 'from device:'
+        : (process.argv[5] === 'nolog'
+          ? undefined :
+          process.argv[5]
+        )
+      )
       proxy({
         publicKey,
         privateKey,
@@ -250,6 +268,7 @@ if (require.main === module) {
         gcsPort,
         interval: +env.IOT_THROTTLE_INTERVAL,
         buffer: +env.IOT_THROTTLE_BUFFER,
+        logRecv,
       })
     }
     else if (mode === 'device') {
