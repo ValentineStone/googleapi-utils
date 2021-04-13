@@ -1,6 +1,6 @@
 'use strict'
 
-const measure = (adapter, interval, sendName, recvName) => recv => {
+const measure = (adapter, interval, recvName, sendName) => recv => {
   let lengthSend = 0
   let lengthRecv = 0
   let sendTick = 0
@@ -21,7 +21,7 @@ const measure = (adapter, interval, sendName, recvName) => recv => {
       avgRecv = (avgRecv * prevTick + lengthRecv) / recvTick
       maxRecv = lengthRecv > maxRecv ? lengthRecv : maxRecv
     }
-    console.log([
+    console.log(
       sendName,
       `(x${sendTick}):`,
       `avg=${avgSend.toFixed(2)},`,
@@ -32,8 +32,8 @@ const measure = (adapter, interval, sendName, recvName) => recv => {
       `avg=${avgRecv.toFixed(2)},`,
       `max=${maxRecv},`,
       `cur=${lengthRecv}`,
-    ].join(' '))
-    
+    )
+
     lengthSend = 0
     lengthRecv = 0
   }

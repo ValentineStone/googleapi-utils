@@ -75,19 +75,32 @@ const udpToSerialMeasured = ({
   serialPath,
   serialBaudRate,
   interval,
-  sendName,
   recvName,
+  sendName,
 }) => adapters.connect(
-  adapters.udp(
-    udpHost,
-    udpPort,
-    console.log
+  adapters.transform(
+    adapters.udp(
+      udpHost,
+      udpPort,
+      console.log
+    ),
+    recv => buff => {
+      console.log('recvName:', buff.length, buff)
+      recv(buff)
+    }
   ),
   adapters.measure(
-    adapters.serialport(
-      serialPath,
-      serialBaudRate,
-      console.log
+    adapters.transform(
+      adapters.serialport(
+        serialPath,
+        serialBaudRate,
+        console.log
+      ),
+      null,
+      send => buff => {
+        console.log('sendName:', buff.length, buff)
+        send(buff)
+      }
     ),
     interval,
     sendName,
@@ -165,8 +178,8 @@ if (require.main === module) {
       const udpHost = process.argv[5] || env.DEVICE_UDP_HOST
       const udpPort = +(process.argv[6] || env.DEVICE_UDP_PORT)
       const interval = +process.argv[7] || undefined
-      const sendName = process.argv[8] || 'send'
-      const recvName = process.argv[9] || 'recv'
+      const recvName = process.argv[8] || 'recv'
+      const sendName = process.argv[9] || 'send'
       if (interval) {
         udpToSerialMeasured({
           udpHost,
@@ -174,8 +187,8 @@ if (require.main === module) {
           serialPath,
           serialBaudRate,
           interval,
-          sendName,
           recvName,
+          sendName,
         })
       } else {
         udpToSerial({
