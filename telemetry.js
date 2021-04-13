@@ -85,7 +85,7 @@ const udpToSerialMeasured = ({
       console.log
     ),
     recv => buff => {
-      console.log('recvName:', buff.length, buff)
+      console.log(recvName, buff.length, buff)
       recv(buff)
     }
   ),
@@ -98,7 +98,7 @@ const udpToSerialMeasured = ({
       ),
       null,
       send => buff => {
-        console.log('sendName:', buff.length, buff)
+        console.log(sendName, buff.length, buff)
         send(buff)
       }
     ),
