@@ -12,7 +12,8 @@ const device = ({
 }) => adapters.connect(
   adapters.serialport(
     serialPath,
-    serialBaudRate
+    serialBaudRate,
+    console.log
   ),
   adapters.googleIoT({
     mode: 'device',
@@ -21,8 +22,8 @@ const device = ({
     cloudRegion,
     credentials,
     frequency,
-  }),
-  console.log
+    connected: console.log
+  })
 )
 
 const proxy = ({
@@ -36,7 +37,8 @@ const proxy = ({
 }) => adapters.connect(
   adapters.udpProxy(
     gcsHost,
-    gcsPort
+    gcsPort,
+    console.log
   ),
   adapters.googleIoT({
     mode: 'proxy',
@@ -45,8 +47,8 @@ const proxy = ({
     cloudRegion,
     credentials,
     frequency,
-  }),
-  console.log
+    connected: console.log
+  })
 )
 
 const udpToSerial = ({
@@ -57,13 +59,14 @@ const udpToSerial = ({
 }) => adapters.connect(
   adapters.udp(
     udpHost,
-    udpPort
+    udpPort,
+    console.log
   ),
   adapters.serialport(
     serialPath,
-    serialBaudRate
-  ),
-  console.log
+    serialBaudRate,
+    console.log
+  )
 )
 
 const ignoreErrors = error => undefined

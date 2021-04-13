@@ -99,7 +99,8 @@ const googleIoT = ({
   cloudRegion,
   frequency,
   keepalive,
-}) => async (recv, connected) => {
+  connected,
+}) => async recv => {
   const iot = require('@google-cloud/iot')
   const uuid = require('uuid')
   const uuid_namespace = 'e72bc52c-7700-11eb-9439-0242ac130002'
@@ -119,14 +120,6 @@ const googleIoT = ({
   const algorithm = 'ES256'
   const mqttBridgeHost = 'mqtt.googleapis.com'
   const mqttBridgePort = 8883
-
-  const toRemote = (topic, buff = zeroBuffer) => {
-    iotClient.sendCommandToDevice({
-      name: remotePath,
-      subfolder: topic,
-      binaryData: buff,
-    }).catch(ignoreErrors)
-  }
 
   await ensurePair(
     iotClient,
@@ -152,122 +145,17 @@ const googleIoT = ({
 
   connected('mqtt')
 
-  const packetnoMax = 2 ** 16 - 1
-  const nextPacketno = packetno => (packetno + 1) % packetnoMax
-  const packetnoBuff = (packetno) => {
-    const packetnoBuff = Buffer.alloc(2)
-    packetnoBuff.writeUInt16BE(packetno)
-    return packetnoBuff
-  }
-  let lastExchangeAt = 0
-  let inPacketno = 1
-  let outPacketno = 0
-  let bufferCurr = emptyBuffer
-  let bufferNext = emptyBuffer
-  const currBuffer = () => bufferCurr
-  const nextBuffer = () => {
-    if (bufferNext.length) {
-      outPacketno = nextPacketno(outPacketno)
-      bufferCurr = Buffer.concat([packetnoBuff(outPacketno), bufferNext])
-      bufferNext = emptyBuffer
-      return bufferCurr
-    } else {
-      return emptyBuffer
-    }
-  }
-  const send = buff => {
-    if (Date.now() - lastExchangeAt > keepalive)
-      bufferNext = emptyBuffer
-    else
-      bufferNext = Buffer.concat([bufferNext, buff])
-  }
-
   client.on('message', (topic, message) => {
-    lastExchangeAt = Date.now()
-    if (topic.endsWith('command')) {
-      if (!handshaked) return
-      const packetno = message.readUInt16BE()
-      console.log('from', mode === 'device'? 'gcs' : 'device', packetno, '/', inPacketno, message.length, packetno === inPacketno ? 'accept' : 'IGNORE')
-      if (packetno === inPacketno) {
-        inPacketno += 1
-        recv(message.slice(2))
-      }
-    }
-    else if (topic.endsWith('request')) {
-      const packetno = message.readUInt16BE()
-      if (packetno === outPacketno) {
-        toRemote('command', currBuffer())
-        //console.log('to iot  ', packetno, '/', outPacketno, 'resend', currBuffer().length)
-      }
-      else if (packetno === nextPacketno(outPacketno)) {
-        toRemote('command', nextBuffer())
-        //console.log('to iot  ', packetno, '/', outPacketno, 'next', currBuffer().length)
-      }
-      else {
-        //console.log('to iot  ', packetno, '/', outPacketno, 'IGNORE')
-      }
-    }
-    else if (topic.endsWith('handshake')) {
-      const inHandshakeInitiator = message.readUInt16BE()
-      const inHandshakeFollower = message.readUInt16BE(2)
-      // console.log('handshake <', [inHandshakeInitiator, inHandshakeFollower], [handshakeInitiator, handshakeFollower], handshaked)
-      // console.log('handshakeWith', handshakeWith)
-      if (!inHandshakeFollower) {
-        if (
-          inHandshakeInitiator === handshakeId
-          || handshakeWith && handshakeWith !== inHandshakeInitiator
-        ) return resetHandshake()
-        else {
-          handshakeInitiator = Math.max(inHandshakeInitiator, handshakeId)
-          handshakeFollower = Math.min(inHandshakeInitiator, handshakeId)
-          handshakeWith = inHandshakeInitiator
-        }
-      } else {
-        if (inHandshakeInitiator === handshakeId || inHandshakeFollower === handshakeId) {
-          handshakeInitiator = inHandshakeInitiator
-          handshakeFollower = inHandshakeFollower
-          handshakeWith = inHandshakeInitiator === handshakeId ? inHandshakeFollower : inHandshakeInitiator
-        }
-      }
-      handshaked = handshakeInitiator && handshakeFollower
-      // console.log('           ', [inHandshakeInitiator, inHandshakeFollower], [handshakeInitiator, handshakeFollower], handshaked)
-      if (!inHandshakeFollower) toRemote('handshake', handshakeBuff())
-      if (handshaked) console.log('handshaked')
-    }
+    recv(message, topic)
   })
 
-  let handshakeId
-  let handshakeInitiator
-  let handshakeFollower
-  let handshakeWith
-  let handshaked
-  let resetHandshake = () => {
-    console.log('handshake')
-    // handshakeId ranges from 1 to packetnoMax
-    handshakeId = Math.ceil(1 + Math.random() * (packetnoMax - 1))
-    handshakeInitiator = handshakeId
-    handshakeFollower = 0
-    handshakeWith = 0
-    handshaked = false
-
-    inPacketno = 1
-    outPacketno = 0
-    bufferCurr = emptyBuffer
-    bufferNext = emptyBuffer
+  const send = (buff, topic) => {
+    iotClient.sendCommandToDevice({
+      name: remotePath,
+      binaryData: buff,
+      ...(topic === undefined ? null : { subfolder: topic })
+    }).catch(ignoreErrors)
   }
-  resetHandshake()
-  const handshakeBuff = () => Buffer.concat([
-    packetnoBuff(handshakeInitiator),
-    packetnoBuff(handshakeFollower)
-  ])
-  setInterval(() => {
-    if (!handshaked) {
-      // console.log('handshake >', [handshakeInitiator, handshakeFollower])
-      toRemote('handshake', handshakeBuff())
-    }
-    else
-      toRemote('request', packetnoBuff(inPacketno))
-  }, frequency)
 
   return send
 }

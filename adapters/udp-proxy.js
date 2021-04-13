@@ -1,11 +1,11 @@
 'use strict'
 
-const udp_proxy = (host, port) => (recv, connected) => {
+const udp_proxy = (host, port, connected) => recv => {
   const dgram = require('dgram')
   const socket = dgram.createSocket('udp4')
   socket.on('listening', () => {
     const addr = socket.address()
-    connected(`${addr.address}:${addr.port} > ${host}:${port}`)
+    connected?.(`${addr.address}:${addr.port} > ${host}:${port}`)
   })
   socket.bind()
   socket.on('message', recv)
