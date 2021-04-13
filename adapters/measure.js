@@ -15,15 +15,27 @@ const measure = (adapter, interval, sendName, recvName) => recv => {
       const prevTick = sendTick++
       avgSend = (avgSend * prevTick + lengthSend) / sendTick
       maxSend = lengthSend > maxSend ? lengthSend : maxSend
-      lengthSend = 0
     }
     if (lengthRecv) {
       const prevTick = recvTick++
       avgRecv = (avgRecv * prevTick + lengthRecv) / recvTick
       maxRecv = lengthRecv > maxRecv ? lengthRecv : maxRecv
-      lengthRecv = 0
     }
-    console.log(`${recvName} (x${sendTick}): avg=${avgSend.toFixed(2)}, max=${maxSend}; ${sendName} (x${recvTick}): avg=${maxSend.toFixed(2)}, max=${maxRecv}`)
+    console.log([
+      sendName,
+      `(x${sendTick}):`,
+      `avg=${avgSend.toFixed(2)},`,
+      `max=${maxSend},`,
+      `cur=${lengthSend};`,
+      recvName,
+      `(x${recvTick}):`,
+      `avg=${avgRecv.toFixed(2)},`,
+      `max=${maxRecv},`,
+      `cur=${lengthRecv}`,
+    ].join(' '))
+    
+    lengthSend = 0
+    lengthRecv = 0
   }
 
   setInterval(tick, interval)
