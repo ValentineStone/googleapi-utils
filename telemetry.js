@@ -78,11 +78,21 @@ const udpToSerialMeasured = ({
   recvName,
   sendName,
 }) => adapters.connect(
+  adapters.udp(
+    udpHost,
+    udpPort,
+    console.log
+  ),
   adapters.transform(
-    adapters.udp(
-      udpHost,
-      udpPort,
-      console.log
+    adapters.measure(
+      adapters.serialport(
+        serialPath,
+        serialBaudRate,
+        console.log
+      ),
+      interval,
+      sendName,
+      recvName,
     ),
     recv => buff => {
       console.log(recvName, buff.length, buff)
@@ -92,16 +102,6 @@ const udpToSerialMeasured = ({
       console.log(sendName, buff.length, buff)
       send(buff)
     }
-  ),
-  adapters.measure(
-    adapters.serialport(
-      serialPath,
-      serialBaudRate,
-      console.log
-    ),
-    interval,
-    sendName,
-    recvName,
   )
 )
 
