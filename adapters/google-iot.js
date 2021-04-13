@@ -97,8 +97,6 @@ const googleIoT = ({
   privateKey,
   credentials,
   cloudRegion,
-  frequency,
-  keepalive,
   connected,
 }) => async recv => {
   const iot = require('@google-cloud/iot')

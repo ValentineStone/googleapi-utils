@@ -18,7 +18,9 @@
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.5.0",
     "jsonwebtoken": "^8.5.1",
+    "jspack": "^0.0.4",
     "jszip": "^3.6.0",
+    "lodash": "^4.17.21",
     "mqtt": "^4.2.6",
     "serialport": "^9.0.7"
   }

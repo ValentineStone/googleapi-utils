@@ -1,12 +1,14 @@
 'use strict'
 const adapters = require('./adapters')
+const transforms = require('./transforms')
 
-const device = ({
+const deviceControlled = ({
   publicKey,
   privateKey,
   cloudRegion,
   credentials,
   frequency,
+  keepalive,
   serialPath,
   serialBaudRate,
 }) => adapters.connect(
@@ -15,13 +17,74 @@ const device = ({
     serialBaudRate,
     console.log
   ),
-  adapters.googleIoT({
+  adapters.googleIoTControlled({
     mode: 'device',
     publicKey,
     privateKey,
     cloudRegion,
     credentials,
     frequency,
+    keepalive,
+    connected: console.log
+  })
+)
+
+const deviceMavlink = ({
+  publicKey,
+  privateKey,
+  cloudRegion,
+  credentials,
+  serialPath,
+  serialBaudRate,
+  interval,
+  buffer,
+}) => adapters.connect(
+  adapters.transform(
+    adapters.serialport(
+      serialPath,
+      serialBaudRate,
+      console.log
+    ),
+    transforms.mavlink(),
+    transforms.mavlink()
+  ),
+  adapters.throttle(
+    adapters.googleIoT({
+      mode: 'device',
+      publicKey,
+      privateKey,
+      cloudRegion,
+      credentials,
+      connected: console.log
+    }),
+    interval,
+    buffer
+  )
+)
+
+const proxyControlled = ({
+  publicKey,
+  privateKey,
+  cloudRegion,
+  credentials,
+  gcsHost,
+  gcsPort,
+  frequency,
+  keepalive,
+}) => adapters.connect(
+  adapters.udpProxy(
+    gcsHost,
+    gcsPort,
+    console.log
+  ),
+  adapters.googleIoTControlled({
+    mode: 'proxy',
+    publicKey,
+    privateKey,
+    cloudRegion,
+    credentials,
+    frequency,
+    keepalive,
     connected: console.log
   })
 )
@@ -31,24 +94,28 @@ const proxy = ({
   privateKey,
   cloudRegion,
   credentials,
-  frequency,
   gcsHost,
   gcsPort,
+  interval,
+  buffer,
 }) => adapters.connect(
   adapters.udpProxy(
     gcsHost,
     gcsPort,
     console.log
   ),
-  adapters.googleIoT({
-    mode: 'proxy',
-    publicKey,
-    privateKey,
-    cloudRegion,
-    credentials,
-    frequency,
-    connected: console.log
-  })
+  adapters.throttle(
+    adapters.googleIoT({
+      mode: 'proxy',
+      publicKey,
+      privateKey,
+      cloudRegion,
+      credentials,
+      connected: console.log
+    }),
+    interval,
+    buffer,
+  )
 )
 
 const udpToSerial = ({
@@ -77,6 +144,8 @@ const udpToSerialMeasured = ({
   interval,
   recvName,
   sendName,
+  logRecv,
+  logSend,
 }) => adapters.connect(
   adapters.udp(
     udpHost,
@@ -95,11 +164,11 @@ const udpToSerialMeasured = ({
       recvName,
     ),
     recv => buff => {
-      //console.log(recvName, buff.length, buff)
+      if (logRecv) console.log(recvName, buff.length, buff)
       recv(buff)
     },
     send => buff => {
-      console.log(sendName, buff.length, buff)
+      if (logSend) console.log(sendName, buff.length, buff)
       send(buff)
     }
   )
@@ -141,10 +210,10 @@ if (require.main === module) {
       credentials,
     } = await loadEnv(false)
     const mode = process.argv[2] || 'proxy'
-    if (mode === 'proxy') {
+    if (mode === 'proxy_c') {
       const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST
       const gcsPort = process.argv[4] || +env.PROXY_UDP_GCS_PORT
-      proxy({
+      proxyControlled({
         publicKey,
         privateKey,
         cloudRegion: env.CLOUD_REGION,
@@ -155,10 +224,10 @@ if (require.main === module) {
         gcsPort,
       })
     }
-    else if (mode === 'device') {
+    else if (mode === 'device_c') {
       const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
       const serialBaudRate = process.argv[4] || +env.DEVICE_SERIAL_BAUD
-      device({
+      deviceControlled({
         publicKey,
         privateKey,
         cloudRegion: env.CLOUD_REGION,
@@ -169,6 +238,34 @@ if (require.main === module) {
         serialBaudRate,
       })
     }
+    else if (mode === 'proxy') {
+      const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST
+      const gcsPort = process.argv[4] || +env.PROXY_UDP_GCS_PORT
+      proxy({
+        publicKey,
+        privateKey,
+        cloudRegion: env.CLOUD_REGION,
+        credentials,
+        gcsHost,
+        gcsPort,
+        interval: +env.IOT_THROTTLE_INTERVAL,
+        buffer: +env.IOT_THROTTLE_BUFFER,
+      })
+    }
+    else if (mode === 'device') {
+      const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
+      const serialBaudRate = process.argv[4] || +env.DEVICE_SERIAL_BAUD
+      deviceMavlink({
+        publicKey,
+        privateKey,
+        cloudRegion: env.CLOUD_REGION,
+        credentials,
+        serialPath,
+        serialBaudRate,
+        interval: +env.IOT_THROTTLE_INTERVAL,
+        buffer: +env.IOT_THROTTLE_BUFFER,
+      })
+    }
     else if (mode === 'serial-udp') {
       const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
       const serialBaudRate = +(process.argv[4] || env.DEVICE_SERIAL_BAUD)
@@ -177,6 +274,8 @@ if (require.main === module) {
       const interval = +process.argv[7] || undefined
       const recvName = process.argv[8] || 'recv'
       const sendName = process.argv[9] || 'send'
+      const logRecv = (process.argv[10] || 'recv,send').includes('recv')
+      const logSend = (process.argv[10] || 'recv,send').includes('send')
       if (interval) {
         udpToSerialMeasured({
           udpHost,
@@ -186,6 +285,8 @@ if (require.main === module) {
           interval,
           recvName,
           sendName,
+          logRecv,
+          logSend,
         })
       } else {
         udpToSerial({
@@ -197,10 +298,4 @@ if (require.main === module) {
       }
     }
   })()
-}
-
-module.exports = {
-  proxy,
-  device,
-  udpToSerial,
 }
