@@ -141,7 +141,7 @@ const googleIoT = ({
     privateKey,
   })
 
-  connected('mqtt')
+  connected?.('mqtt')
 
   client.on('message', (topic, message) => {
     recv(message, topic)
