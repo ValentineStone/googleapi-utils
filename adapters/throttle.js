@@ -3,7 +3,6 @@
 const throttle = (adapter, interval, length = Infinity) => recv => {
   const adapterSend = adapter(recv)
   let accumulator = Buffer.from([])
-  let timeOut = setTimeout(sendThrottled, interval)
   const sendThrottled = () => {
     if (accumulator.length) {
       const buff = accumulator
@@ -18,6 +17,7 @@ const throttle = (adapter, interval, length = Infinity) => recv => {
     if (accumulator.length > length)
       sendThrottled()
   }
+  let timeOut = setTimeout(sendThrottled, interval)
   return send
 }
 
