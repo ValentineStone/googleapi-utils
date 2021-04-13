@@ -26,16 +26,16 @@ const pack = pack => {
   return pack.buff
 }
 
-const atcp = (adapter, mode) => recv => {
+const atcp = (adapter, mode) => async recv => {
   const { EventEmitter } = require('events')
   const ee = new EventEmitter()
   if (mode === 'server') {
-    const send = adapter((...args) => ee.emit('fromServer', ...args))
+    const send = await adapter((...args) => ee.emit('fromServer', ...args))
     ee.on('toClient', send)
     atcpServer(ee)
   }
   else {
-    const send = adapter((...args) => ee.emit('fromClient', ...args))
+    const send = await adapter((...args) => ee.emit('fromClient', ...args))
     ee.on('toServer', send)
     atcpClient(ee)
   }

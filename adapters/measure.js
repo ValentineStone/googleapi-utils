@@ -1,6 +1,6 @@
 'use strict'
 
-const measure = (adapter, interval, recvName, sendName) => recv => {
+const measure = (adapter, interval, recvName, sendName) => async recv => {
   let lengthSend = 0
   let lengthRecv = 0
   let sendTick = 0
@@ -43,7 +43,7 @@ const measure = (adapter, interval, recvName, sendName) => recv => {
     lengthRecv += buff.length
     recv(buff)
   }
-  const adapterSend = adapter(adapterRecv)
+  const adapterSend = await adapter(adapterRecv)
   const send = buff => {
     lengthSend += buff.length
     adapterSend(buff)

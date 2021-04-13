@@ -1,7 +1,7 @@
 'use strict'
 
-const throttle = (adapter, interval, length = Infinity) => recv => {
-  const adapterSend = adapter(recv)
+const throttle = (adapter, interval, length = Infinity) => async recv => {
+  const adapterSend = await adapter(recv)
   let accumulator = Buffer.from([])
   const sendThrottled = () => {
     if (accumulator.length) {
