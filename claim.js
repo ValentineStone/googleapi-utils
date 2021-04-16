@@ -1,13 +1,6 @@
 'use strict'
 const { auth } = require('./firebase')
-
-const jsonify = str => {
-  try {
-    return JSON.parse(str)
-  } catch {
-    return str
-  }
-}
+const { jsonify } = require('./utils')
 
 async function main(uid, claim, value) {
   if (claim) {

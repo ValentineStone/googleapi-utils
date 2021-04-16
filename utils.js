@@ -1,16 +1,29 @@
 const interval = (fn, ms) => {
   let id
-  const start = () => {
-    id = setInterval(fn, ms)
-    return clear
-  }
-  const clear = () => {
+  return () => {
     clearInterval(id)
-    return start
+    id = setInterval(fn, ms)
   }
-  return start()
+}
+
+const timeout = (fn, ms) => {
+  let id
+  return () => {
+    clearTimeout(id)
+    id = setTimeout(fn, ms)
+  }
+}
+
+const jsonify = str => {
+  try {
+    return JSON.parse(str)
+  } catch {
+    return str
+  }
 }
 
 module.exports = {
-  interval
+  interval,
+  timeout,
+  jsonify
 }

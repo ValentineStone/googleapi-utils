@@ -1,6 +1,7 @@
 'use strict'
 const adapters = require('./adapters')
 const transforms = require('./transforms')
+const { timeout } = require('./utils')
 
 const deviceControlled = ({
   publicKey,
@@ -99,35 +100,47 @@ const proxy = ({
   interval,
   buffer,
   logRecv,
-}) => adapters.connect(
-  adapters.udpProxy(
-    gcsHost,
-    gcsPort,
-    console.log
-  ),
-  adapters.transform(
-    adapters.throttle(
-      adapters.googleIoT({
-        mode: 'proxy',
-        publicKey,
-        privateKey,
-        cloudRegion,
-        credentials,
-        connected: console.log
-      }),
-      interval,
-      buffer,
+  logRecvTimeout = 0,
+}) => {
+  const noDataTimeout = timeout(() => {
+    console.log(`[WARNING!]: NO DATA FOR OVER ${logRecvTimeout / 1000} SECONDS, ASSUME DISCONNECTED`)
+  }, logRecvTimeout)
+  return adapters.connect(
+    adapters.udpProxy(
+      gcsHost,
+      gcsPort,
+      console.log
     ),
-    recv => buff => {
-      if (logRecv) console.log(
-        logRecv,
-        buff.length,
-        ...(buff.length ? ['< ' + buff[0].toString(16) + ' ... >'] : [])
-      )
-      recv(buff)
-    }
-  ),
-)
+    adapters.transform(
+      adapters.throttle(
+        adapters.googleIoT({
+          mode: 'proxy',
+          publicKey,
+          privateKey,
+          cloudRegion,
+          credentials,
+          connected: (...args) => {
+            if (logRecv && logRecvTimeout) noDataTimeout()
+            console.log(...args)
+          }
+        }),
+        interval,
+        buffer,
+      ),
+      recv => {
+        return buff => {
+          if (logRecv && logRecvTimeout) noDataTimeout()
+          if (logRecv) console.log(
+            logRecv,
+            buff.length,
+            ...(buff.length ? ['< ' + buff[0].toString(16) + ' ... >'] : [])
+          )
+          recv(buff)
+        }
+      }
+    ),
+  )
+}
 
 const udpToSerial = ({
   udpHost,
@@ -259,6 +272,7 @@ if (require.main === module) {
           process.argv[5]
         )
       )
+      const logRecvTimeout = +process.argv[6] || +env.PROXY_LOG_RECV_TIMEOUT_WARNING
       proxy({
         publicKey,
         privateKey,
@@ -269,6 +283,7 @@ if (require.main === module) {
         interval: +env.IOT_THROTTLE_INTERVAL,
         buffer: +env.IOT_THROTTLE_BUFFER,
         logRecv,
+        logRecvTimeout
       })
     }
     else if (mode === 'device') {
