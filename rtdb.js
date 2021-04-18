@@ -1,6 +1,7 @@
 'use strict'
 const { database } = require('./firebase')
 const { jsonify } = require('./utils')
+const { inspect } = require('util')
 
 const cp = async (from, to, push) => {
   const fromGet = await database.ref(from).get()
@@ -79,7 +80,9 @@ const set = async (path, value, push) => {
 const get = async (path) => {
   console.log('getting...')
   const pathGet = await database.ref(path).get()
-  console.log(pathGet.val())
+  const val = pathGet.val()
+  const formatted = inspect(val, false, Infinity, true)
+  console.log(formatted)
 }
 
 module.exports = { cp, mv, rm, set, get }
