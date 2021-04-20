@@ -10,8 +10,8 @@ const cp = async (from, to, push) => {
     throw new Error(`Can not copy: ${from} does not exist`)
   if (!push && toGet.exists())
     throw new Error(`Can not copy: ${to} already exists`)
-  if (push && !toGet.exists())
-    throw new Error(`Can not copy and push: ${to} does not exist`)
+  //if (push && !toGet.exists())
+  //  throw new Error(`Can not copy and push: ${to} does not exist`)
   if (push) {
     console.log('copying...')
     const pushRef = await database.ref(to).push()
@@ -32,8 +32,8 @@ const mv = async (from, to, push) => {
     throw new Error(`Can not move: ${from} does not exist`)
   if (!push && toGet.exists())
     throw new Error(`Can not move: ${to} already exists`)
-  if (push && !toGet.exists())
-    throw new Error(`Can not move and push: ${to} does not exist`)
+  //if (push && !toGet.exists())
+  //  throw new Error(`Can not move and push: ${to} does not exist`)
   if (push) {
     console.log('moving...')
     const pushRef = await database.ref(to).push()
@@ -62,8 +62,8 @@ const set = async (path, value, push) => {
   const pathGet = await database.ref(path).get()
   if (!push && pathGet.exists())
     throw new Error(`Can not set: ${path} already exists`)
-  if (push && !pathGet.exists())
-    throw new Error(`Can not set and push: ${to} does not exist`)
+  //if (push && !pathGet.exists())
+  //  throw new Error(`Can not set and push: ${path} does not exist`)
   if (push) {
     console.log('setting...')
     const pushRef = await database.ref(path).push()
