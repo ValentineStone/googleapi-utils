@@ -68,7 +68,7 @@ const set = async (path, value, push) => {
     console.log('setting...')
     const pushRef = await database.ref(path).push()
     await pushRef.set(value)
-    console.log('set', `${push}/${pushRef.key}`)
+    console.log('set', `${path}/${pushRef.key}`)
   }
   else {
     console.log('setting...')
