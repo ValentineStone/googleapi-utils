@@ -1,5 +1,7 @@
 'use strict'
 
+const nodebufferUnzip = file => file ? file.async('nodebuffer') : file
+
 const zipenv = async (zipFile, assignEnv = true) => {
   const zip = await require('jszip').loadAsync(
     require('fs').readFileSync(zipFile))
@@ -15,10 +17,10 @@ const zipenv = async (zipFile, assignEnv = true) => {
     privateKey,
     publicKey,
   ] = await Promise.all([
-    files['.env'].async('nodebuffer'),
-    files['credentials.json'].async('nodebuffer'),
-    files['ec_private.pem'].async('nodebuffer'),
-    files['ec_public.pem'].async('nodebuffer'),
+    nodebufferUnzip(files['.env']),
+    nodebufferUnzip(files['credentials.json']),
+    nodebufferUnzip(files['ec_private.pem']),
+    nodebufferUnzip(files['ec_public.pem']),
   ])
   const credentials = JSON.parse(credentialsData)
   const env = require('dotenv').parse(envData)

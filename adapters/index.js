@@ -8,6 +8,7 @@ const udpProxy = require('./udp-proxy')
 const udp = require('./udp')
 const googleIoTControlled = require('./google-iot-controlled')
 const googleIoT = require('./google-iot')
+const pubsub = require('./pubsub')
 
 module.exports = {
   connect,
@@ -19,4 +20,5 @@ module.exports = {
   udp,
   googleIoTControlled,
   googleIoT,
+  pubsub,
 }

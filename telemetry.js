@@ -30,7 +30,7 @@ const deviceControlled = ({
   })
 )
 
-const deviceMavlink = ({
+const deviceIoTMavlink = ({
   publicKey,
   privateKey,
   cloudRegion,
@@ -56,6 +56,31 @@ const deviceMavlink = ({
       privateKey,
       cloudRegion,
       credentials,
+      connected: console.log
+    }),
+    interval,
+    buffer
+  )
+)
+
+const devicePubSub = ({
+  uuid,
+  credentials,
+  serialPath,
+  serialBaudRate,
+  interval,
+  buffer,
+}) => adapters.connect(
+  adapters.serialport(
+    serialPath,
+    serialBaudRate,
+    console.log
+  ),
+  adapters.throttle(
+    adapters.pubsub({
+      mode: 'device',
+      credentials,
+      uuid,
       connected: console.log
     }),
     interval,
@@ -90,7 +115,7 @@ const proxyControlled = ({
   })
 )
 
-const proxy = ({
+const proxyIoT = ({
   publicKey,
   privateKey,
   cloudRegion,
@@ -118,6 +143,55 @@ const proxy = ({
           publicKey,
           privateKey,
           cloudRegion,
+          credentials,
+          connected: (...args) => {
+            if (logRecv && logRecvTimeout) noDataTimeout()
+            console.log(...args)
+          }
+        }),
+        interval,
+        buffer,
+      ),
+      recv => {
+        return buff => {
+          if (logRecv && logRecvTimeout) noDataTimeout()
+          if (logRecv) console.log(
+            logRecv,
+            buff.length,
+            ...(buff.length ? ['< ' + buff[0].toString(16) + ' ... >'] : [])
+          )
+          recv(buff)
+        }
+      }
+    ),
+  )
+}
+
+const proxyPubSub = ({
+  uuid,
+  credentials,
+  gcsHost,
+  gcsPort,
+  interval,
+  buffer,
+  logRecv,
+  logRecvTimeout = 0,
+  logRecvWarning = ''
+}) => {
+  const noDataTimeout = timeout(() => {
+    if (logRecvWarning) console.log(logRecvWarning)
+  }, logRecvTimeout)
+  return adapters.connect(
+    adapters.udpProxy(
+      gcsHost,
+      gcsPort,
+      console.log
+    ),
+    adapters.transform(
+      adapters.throttle(
+        adapters.pubsub({
+          mode: 'proxy',
+          uuid,
           credentials,
           connected: (...args) => {
             if (logRecv && logRecvTimeout) noDataTimeout()
@@ -262,7 +336,7 @@ if (require.main === module) {
         serialBaudRate,
       })
     }
-    else if (mode === 'proxy') {
+    else if (mode === 'proxy-iot') {
       const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST
       const gcsPort = process.argv[4] || +env.PROXY_UDP_GCS_PORT
       const logRecv = (process.argv[5] === undefined
@@ -273,7 +347,7 @@ if (require.main === module) {
         )
       )
       const logRecvTimeout = +process.argv[6] || +env.PROXY_LOG_RECV_TIMEOUT_WARNING
-      proxy({
+      proxyIoT({
         publicKey,
         privateKey,
         cloudRegion: env.CLOUD_REGION,
@@ -286,13 +360,48 @@ if (require.main === module) {
         logRecvTimeout
       })
     }
-    else if (mode === 'device') {
+    else if (mode === 'device-iot') {
       const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
       const serialBaudRate = process.argv[4] || +env.DEVICE_SERIAL_BAUD
-      deviceMavlink({
+      deviceIoTMavlink({
         publicKey,
         privateKey,
         cloudRegion: env.CLOUD_REGION,
+        credentials,
+        serialPath,
+        serialBaudRate,
+        interval: +env.IOT_THROTTLE_INTERVAL,
+        buffer: +env.IOT_THROTTLE_BUFFER,
+      })
+    }
+    else if (mode === 'proxy') {
+      const gcsHost = process.argv[3] || env.PROXY_UDP_GCS_HOST
+      const gcsPort = process.argv[4] || +env.PROXY_UDP_GCS_PORT
+      const logRecv = (process.argv[5] === undefined
+        ? 'from device:'
+        : (process.argv[5] === 'nolog'
+          ? undefined :
+          process.argv[5]
+        )
+      )
+      const logRecvTimeout = +process.argv[6] || +env.PROXY_LOG_RECV_TIMEOUT
+      const logRecvMessage = +process.argv[7] || +env.PROXY_LOG_RECV_WARNING
+      proxyPubSub({
+        credentials,
+        gcsHost,
+        gcsPort,
+        interval: +env.IOT_THROTTLE_INTERVAL,
+        buffer: +env.IOT_THROTTLE_BUFFER,
+        logRecv,
+        logRecvTimeout,
+        logRecvMessage
+      })
+    }
+    else if (mode === 'device') {
+      const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
+      const serialBaudRate = process.argv[4] || +env.DEVICE_SERIAL_BAUD
+      devicePubSub({
+        uuid,
         credentials,
         serialPath,
         serialBaudRate,
