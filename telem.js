@@ -126,8 +126,6 @@ if (require.main === module) {
   (async () => {
     const {
       env,
-      publicKey,
-      privateKey,
       credentials,
     } = await loadEnv(false)
     const mode = process.argv[2] || 'proxy'
@@ -143,7 +141,7 @@ if (require.main === module) {
         )
       )
       const logRecvTimeout = +process.argv[6] || +env.PROXY_LOG_RECV_TIMEOUT
-      const logRecvMessage = +process.argv[7] || +env.PROXY_LOG_RECV_WARNING
+      const logRecvWarning = process.argv[7] || env.PROXY_LOG_RECV_WARNING
       proxyPubSub({
         uuid,
         credentials,
@@ -153,10 +151,11 @@ if (require.main === module) {
         buffer: +env.IOT_THROTTLE_BUFFER,
         logRecv,
         logRecvTimeout,
-        logRecvMessage
+        logRecvWarning
       })
     }
     else if (mode === 'device') {
+      const uuid = env.DEVICE_UUID
       const serialPath = process.argv[3] || env.DEVICE_SERIAL_PATH
       const serialBaudRate = process.argv[4] || +env.DEVICE_SERIAL_BAUD
       devicePubSub({

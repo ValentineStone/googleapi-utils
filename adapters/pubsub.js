@@ -70,7 +70,7 @@ const pubsub = ({
 
   // Receive callbacks for new messages on the subscription
   subscription.on('message', message => {
-    message.ack()
+    try { message.ack() } catch { }
     recv?.(message.data)
   })
 
