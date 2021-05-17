@@ -1,17 +1,12 @@
 {
   "name": "googleapi-utils",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "An assortment of Google Cloud utilities.",
   "author": "Leonid Romanovsky <sirLeonidRomanovsky@gmail.com>",
   "license": "MIT",
-  "bin": "telem.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ValentineStone/googleapi-utils.git"
-  },
-  "pkg": {},
-  "scripts": {
-    "build": "pkg . --target node14-win-x86"
   },
   "dependencies": {
     "@google-cloud/iot": "^2.3.0",
@@ -20,9 +15,6 @@
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.5.0",
     "jsonwebtoken": "^8.5.1",
-    "jspack": "^0.0.4",
-    "jszip": "^3.6.0",
-    "lodash": "^4.17.21",
     "mqtt": "^4.2.6",
     "serialport": "^9.0.7"
   }
