@@ -1,5 +1,5 @@
 {
-  "name": "googleapi-utils",
+  "name": "@valentine-stone/googleapi-utils",
   "version": "1.0.0",
   "description": "An assortment of Google Cloud utilities.",
   "author": "Leonid Romanovsky <sirLeonidRomanovsky@gmail.com>",
