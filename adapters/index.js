@@ -4,6 +4,7 @@ const connectSync = require('./connectSync')
 const measure = require('./measure')
 const throttle = require('./throttle')
 const transform = require('./transform')
+const transformSync = require('./transformSync')
 const serialport = require('./serialport')
 const udpProxy = require('./udp-proxy')
 const udp = require('./udp')
@@ -17,6 +18,7 @@ module.exports = {
   measure,
   throttle,
   transform,
+  transformSync,
   serialport,
   udpProxy,
   udp,
