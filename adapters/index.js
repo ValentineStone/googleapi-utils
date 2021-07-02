@@ -1,5 +1,6 @@
 'use strict'
 const connect = require('./connect')
+const connectSync = require('./connectSync')
 const measure = require('./measure')
 const throttle = require('./throttle')
 const transform = require('./transform')
@@ -12,6 +13,7 @@ const pubsub = require('./pubsub')
 
 module.exports = {
   connect,
+  connectSync,
   measure,
   throttle,
   transform,
