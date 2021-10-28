@@ -14,12 +14,11 @@ const getSubscription = async (topic, name) => {
   report('subscriptions', 'connecting...')
   try {
     await topic.createSubscription(name, { enableMessageOrdering: true })
-  } catch (err) {
-    report('subscriptions', 'exists, deleting...')
-    await topic.subscription(name).delete()
-    report('subscriptions', 'deleted, creating...')
-    await topic.createSubscription(name, { enableMessageOrdering: true })
     report('subscriptions', 'created')
+  } catch (err) {
+    report('subscriptions', 'exists, clearing...')
+    await topic.subscription(name).seek(new Date('3000-01-01'))
+    report('subscriptions', 'cleared')
   }
   report('subscriptions', chalk.green('ready'))
   return topic.subscription(name)
@@ -70,8 +69,10 @@ const pubsub = ({
 
   // Receive callbacks for new messages on the subscription
   subscription.on('message', message => {
-    try { message.ack() } catch { }
-    recv?.(message.data)
+    try {
+      message.ack()
+      recv?.(message.data)
+    } catch { }
   })
 
   const pubTopic = device ? topicFromDevice : topicToDevice
