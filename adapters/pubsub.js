@@ -5,24 +5,18 @@ const report = (who, ...args) => console.log(chalk.gray(`[${who}]:`), ...args)
 
 const ignoreErrors = err => { }
 
-const getTopic = async (pubsub, name) => {
-  await pubsub.createTopic(name).catch(ignoreErrors)
+const getTopic = async (pubsub, name, desc) => {
+  if (await pubsub.topic(name).exists().then(([exists]) => !exists))
+    await pubsub.createTopic(name).catch(ignoreErrors)
   return pubsub.topic(name, { enableMessageOrdering: true })
 }
 
 const getSubscription = async (topic, name) => {
-  report('subscriptions', 'connecting...')
-  try {
-    await topic.createSubscription(name, { enableMessageOrdering: true })
-    report('subscriptions', 'created')
-  } catch (err) {
-    report('subscriptions', 'exists, clearing...')
+  if (await topic.subscription(name).exists().then(([exists]) => exists))
     await topic.subscription(name).seek(new Date('3000-01-01'))
-    report('subscriptions', 'cleared')
-  }
-  report('subscriptions', chalk.green('ready'))
+  else
+    await topic.createSubscription(name, { enableMessageOrdering: true })
   return topic.subscription(name)
-
 }
 
 
@@ -42,21 +36,13 @@ const pubsub = ({
   })
 
   // Creates a new topic
-  report('topics', 'connecting...')
   const [
     topicToDevice,
     topicFromDevice
   ] = await Promise.all([
-    getTopic(pubsub, `device-${uuid}-to`).then(topic => {
-      report('topics', 'to device ready')
-      return topic
-    }),
-    getTopic(pubsub, `device-${uuid}-from`).then(topic => {
-      report('topics', 'from device ready')
-      return topic
-    })
+    getTopic(pubsub, `device-${uuid}-to`, 'to device'),
+    getTopic(pubsub, `device-${uuid}-from`, 'from device'),
   ])
-  report('topics', chalk.green('ready'))
 
   // Creates a subscription on that new topic
   let subscription
