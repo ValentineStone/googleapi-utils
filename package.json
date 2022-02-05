@@ -15,7 +15,7 @@
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.5.0",
     "jsonwebtoken": "^8.5.1",
-    "mqtt": "^4.2.6",
+    "mqtt": "^4.3.4",
     "serialport": "^9.0.7"
   }
 }
