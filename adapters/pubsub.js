@@ -25,9 +25,11 @@ const pubsub = ({
   uuid,
   mode,
   connected,
+  suffix,
 }) => async recv => {
   const { PubSub } = require('@google-cloud/pubsub')
   const device = mode === 'device'
+  if (suffix) suffix = '-' + suffix
 
   // Instantiates a client
   const pubsub = new PubSub({
@@ -40,7 +42,7 @@ const pubsub = ({
     topicToDevice,
     topicFromDevice
   ] = await Promise.all([
-    getTopic(pubsub, `device-${uuid}-to`, 'to device'),
+    getTopic(pubsub, `device-${uuid}-to${suffix}`, 'to device'),
     getTopic(pubsub, `device-${uuid}-from`, 'from device'),
   ])
 
@@ -49,7 +51,7 @@ const pubsub = ({
   if (device)
     subscription = await getSubscription(topicToDevice, `device-${uuid}-to`)
   else
-    subscription = await getSubscription(topicFromDevice, `device-${uuid}-from`)
+    subscription = await getSubscription(topicFromDevice, `device-${uuid}-from${suffix}`)
 
   connected?.(`${uuid}@pubsub`)
 
