@@ -1,6 +1,6 @@
 {
   "name": "@valentine-stone/googleapi-utils",
-  "version": "1.4.0",
+  "version": "1.5.1",
   "description": "An assortment of Google Cloud utilities.",
   "author": "Leonid Romanovsky <sirLeonidRomanovsky@gmail.com>",
   "license": "MIT",

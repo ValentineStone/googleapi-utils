@@ -23,13 +23,10 @@ const getSubscription = async (topic, name) => {
 const pubsub = ({
   credentials,
   uuid,
-  mode,
   connected,
-  suffix,
+  slave,
 }) => async recv => {
   const { PubSub } = require('@google-cloud/pubsub')
-  const device = mode === 'device'
-  if (suffix) suffix = '-' + suffix
 
   // Instantiates a client
   const pubsub = new PubSub({
@@ -42,16 +39,20 @@ const pubsub = ({
     topicToDevice,
     topicFromDevice
   ] = await Promise.all([
-    getTopic(pubsub, `device-${uuid}-to${suffix}`, 'to device'),
+    getTopic(pubsub, `device-${uuid}-to`, 'to device'),
     getTopic(pubsub, `device-${uuid}-from`, 'from device'),
   ])
 
   // Creates a subscription on that new topic
   let subscription
-  if (device)
-    subscription = await getSubscription(topicToDevice, `device-${uuid}-to`)
+  if (slave) {
+    if (slave === true)
+      subscription = await getSubscription(topicFromDevice, `device-${uuid}-from`)
+    else
+      subscription = await getSubscription(topicFromDevice, `device-${uuid}-from-to-${slave}`)
+  }
   else
-    subscription = await getSubscription(topicFromDevice, `device-${uuid}-from${suffix}`)
+    subscription = await getSubscription(topicToDevice, `device-${uuid}-to`)
 
   connected?.(`${uuid}@pubsub`)
 
@@ -63,7 +64,7 @@ const pubsub = ({
     } catch { }
   })
 
-  const pubTopic = device ? topicFromDevice : topicToDevice
+  const pubTopic = slave ? topicToDevice : topicFromDevice
   const send = data => pubTopic.publishMessage({ data, orderingKey: 'k' })
   return send
 }
