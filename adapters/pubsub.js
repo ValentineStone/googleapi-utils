@@ -25,6 +25,7 @@ const pubsub = ({
   uuid,
   connected,
   slave,
+  onInstance,
 }) => async recv => {
   const { PubSub } = require('@google-cloud/pubsub')
 
@@ -33,6 +34,8 @@ const pubsub = ({
     projectId: credentials.project_id,
     credentials,
   })
+
+  onInstance?.(pubsub)
 
   // Creates a new topic
   const [
@@ -68,5 +71,8 @@ const pubsub = ({
   const send = data => pubTopic.publishMessage({ data, orderingKey: 'k' })
   return send
 }
+
+pubsub.getTopic = getTopic
+pubsub.getSubscription = getSubscription
 
 module.exports = pubsub
