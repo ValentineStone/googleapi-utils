@@ -1,7 +1,4 @@
 'use strict'
-const chalk = require('chalk')
-
-const report = (who, ...args) => console.log(chalk.gray(`[${who}]:`), ...args)
 
 const ignoreErrors = err => { }
 
