@@ -32,7 +32,7 @@ const pubsub = ({
     credentials,
   })
 
-  onInstance?.(pubsub)
+  await onInstance?.(pubsub)
 
   // Creates a new topic
   const [
