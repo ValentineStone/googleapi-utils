@@ -68,7 +68,9 @@ const pubsub = ({
   })
 
   const pubTopic = slave ? topicToDevice : topicFromDevice
-  const send = data => pubTopic.publishMessage({ data, orderingKey: 'k' })
+  const send = data => pubTopic.publishMessage(
+    { data, orderingKey: 'k' },
+    err => err && topic.resumePublishing('k'))
   return send
 }
 
