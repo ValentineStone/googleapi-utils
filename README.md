@@ -28,6 +28,17 @@ An assortment of Google Cloud utilities.
 ## Usage
 ### Claim
 `node claim <userId> <claim> <value>` set custom claim on firebase user
+### Random string
+`node rstr <length> <symbols> <firstsymbols>`  
+Generate random string of `length` symbols consisting of `symbols`.  
+If `firstsymbols` is present the first symbol of the string will be selected from it.
+
+Default parameters are:
+```
+length = 32
+symbols = abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/
+firstsymbols = abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+```
 ### UUID
 `node uuid <name> <namespace>` to generate a UUID-5 (if `name` is not provided is it set to `Date.now() + '-' + Math.random()`)
 ### Firebase Realtime Database
@@ -67,10 +78,4 @@ node rtdb get /goodguys
 # > getting...
 # > { '-M_vAODTlncCrpePrYeZ': { name: 'Mare-do-well' } }
 # Glorious work!
-```
-
-### To generate Google IoT keys
-```
-openssl ecparam -genkey -name prime256v1 -noout -out ec_private.pem
-openssl ec -in ec_private.pem -pubout -out ec_public.pem
 ```

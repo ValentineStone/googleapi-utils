@@ -4,7 +4,8 @@ const { jsonify } = require('./utils')
 
 async function main(uid, claim, value) {
   if (claim) {
-    await auth.setCustomUserClaims(uid, { [claim]: value })
+    const user = await auth.getUser(uid)
+    await auth.setCustomUserClaims(uid, { ...user.customClaims, [claim]: value })
     console.log('set', claim, '=', value, 'for', uid)
   }
   else {
