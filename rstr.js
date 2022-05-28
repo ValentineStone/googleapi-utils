@@ -1,5 +1,23 @@
-const symbolsDefault = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/'
-const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+const symbolsAlpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const symbolsNum = '0123456789'
+const symbolsOther = '~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/'
+const symbolsOtherURL = '-_.~'
+const symbolsDefault = symbolsAlpha + symbolsNum + symbolsOther
+
+const getSymbols = arg => {
+  switch (arg) {
+    case '-alpha': return symbolsAlpha
+    case '-num': return symbolsNum
+    case '-alnum': return symbolsAlpha + symbolsNum
+    case '-other': return symbolsOther
+    case '-url': return symbolsAlpha + symbolsNum + symbolsOtherURL
+    case '-any':
+    case '':
+    case undefined: return symbolsAlpha + symbolsNum + symbolsOther
+    default: return arg
+  }
+}
 
 const rchar = symbols => symbols[Math.floor(Math.random() * symbols.length)]
 
@@ -9,9 +27,8 @@ const rstring = (count, symbols) => {
 
 if (require.main === module) {
   const count = +process.argv[2] || 32
-  const symbols = process.argv[3] || symbolsDefault
-  const symbolsFirst = process.argv[4]
-    || (symbols === symbolsDefault ? letters : false)
+  const symbols = getSymbols(process.argv[3])
+  const symbolsFirst = getSymbols(process.argv[4] || process.argv[3])
   let generated = rstring(count, symbols)
   if (symbolsFirst)
     generated = rchar(symbolsFirst) + generated.slice(1)

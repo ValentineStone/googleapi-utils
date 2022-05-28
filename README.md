@@ -33,12 +33,12 @@ An assortment of Google Cloud utilities.
 Generate random string of `length` symbols consisting of `symbols`.  
 If `firstsymbols` is present the first symbol of the string will be selected from it.
 
-Default parameters are:
+Default `length` is `32`, default `symbols`:
 ```
-length = 32
-symbols = abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/
-firstsymbols = abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/
 ```
+Both `symbols` and `firstsymbols` can be one of the following shortcuts:  
+`-alpha` `-num` `-alnum` `-other` `-url` `-any`.
 ### UUID
 `node uuid <name> <namespace>` to generate a UUID-5 (if `name` is not provided is it set to `Date.now() + '-' + Math.random()`)
 ### Firebase Realtime Database
