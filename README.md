@@ -27,7 +27,20 @@ An assortment of Google Cloud utilities.
 
 ## Usage
 ### Claim
-`node claim <userId> <claim> <value>` set custom claim on firebase user
+`node claim <userId> <claim> <value>` set custom claim
+`node claim <userId> <claim> --clear` clear custom claims
+`node claim <userId> <claim>` get custom claim
+`node claim <userId>` get all custom claims
+`node claim <userId> --clear` clear all custom claims
+
+In all commands `userId` can be multiple ids, separated by a comma, like so:
+```sh
+node claim wejq7RynaVC2H3WK4toXxT3BHgWS,43f5xpVkCmXz22OdIlSshYMZANF2,7Y9nKfPY1JMMVEVE8Q4tSH9pwsGG admin true
+# > wejq7RynaVC2H3WK4toXxT3BHgWS admin = true
+# > 43f5xpVkCmXz22OdIlSshYMZANF2 admin = true
+# > 7Y9nKfPY1JMMVEVE8Q4tSH9pwsGG admin = true
+# set the claim 'admin' to true for 3 users
+```
 ### Random string
 `node rstr <length> <symbols> <firstsymbols>`  
 Generate random string of `length` symbols consisting of `symbols`.  
@@ -39,6 +52,14 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~`!@#$%^&*()_-+={[
 ```
 Both `symbols` and `firstsymbols` can be one of the following shortcuts:  
 `-alpha` `-num` `-alnum` `-other` `-url` `-any`.
+### Random date
+`node rdate <from = 1990-01-01> <to = 1999-12-31>`
+```sh
+node rdate
+# > 1994-10-21 20:52:55
+node rdate 0001-01-01 1000-01-01
+# > 0396-01-05 00:02:07
+```
 ### UUID
 `node uuid <name> <namespace>` to generate a UUID-5 (if `name` is not provided is it set to `Date.now() + '-' + Math.random()`)
 ### Firebase Realtime Database
