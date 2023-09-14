@@ -11,6 +11,7 @@ const udp = require('./udp')
 const googleIoTControlled = require('./google-iot-controlled')
 const googleIoT = require('./google-iot')
 const pubsub = require('./pubsub')
+const tcp = require('./tcp')
 
 module.exports = {
   connect,
@@ -25,4 +26,5 @@ module.exports = {
   googleIoTControlled,
   googleIoT,
   pubsub,
+  tcp
 }

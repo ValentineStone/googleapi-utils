@@ -4,20 +4,21 @@ An assortment of Google Cloud utilities.
 
 ## Currently includes:
 1. Firebase custom claim setter
-2. UUID generator
-3. Firebase Realtime Database manipulation cli
-4. Assortmet of Google Cloud network and utility middleware (adapters) for streaming data between endpoints
+2. Firebase Realtime Database manipulation cli
+3. Assortmet of Google Cloud network and utility middleware (adapters) for streaming data between endpoints
     - `pubsub` - Google Cloud Pub/Sub powered P2P tunnel (spawns necessary resources automatically)
     - `google-iot` - [Google IoT Commands](https://cloud.google.com/iot/docs/how-tos/commands) powered P2P tunnel (spawns necessary resources automatically)
     - `google-iot-controlled` - `google-iot`, but with TCP-like session managment
     - `serialport` - An adapter-wrapper for [`serialport`](https://www.npmjs.com/package/serialport)
     - `udp` - Adapter-wrapper for UDP (dgram) server (listens on (owns) a given ip and port)
     - `udp-proxy` - Adapter-wrapper for UDP (dgram) client (talks to a given ip and port)
+    - `tcp` - Adapter-wrapper for TCP server (listens on a given ip and port for any connections, reads from all writes to all)
     - `chain` - as the name implies, chain multiple adapters together, creating a data conveyor
     - `measure` - measure and log any adapter's input/output
     - `throttle` - Throttles the bytes sent by delaying send untill a given amount of bytes is ready to be sent
     - `transform` - Arbitrarily transform input and output (can be used for logging or sideeffects)
     - *`atcp` - Abstract pure js TCP implementation (not finished, does not work)*
+4. Assortmet of other little tools (see below)
 
 ## Setup
 1. `git clone https://github.com/ValentineStone/googleapi-utils`
@@ -27,10 +28,10 @@ An assortment of Google Cloud utilities.
 
 ## Usage
 ### Claim
-`node claim <userId> <claim> <value>` set custom claim
-`node claim <userId> <claim> --clear` clear custom claims
-`node claim <userId> <claim>` get custom claim
-`node claim <userId>` get all custom claims
+`node claim <userId> <claim> <value>` set custom claim  
+`node claim <userId> <claim> --clear` clear custom claims  
+`node claim <userId> <claim>` get custom claim  
+`node claim <userId>` get all custom claims  
 `node claim <userId> --clear` clear all custom claims
 
 In all commands `userId` can be multiple ids, separated by a comma, like so:
@@ -62,6 +63,19 @@ node rdate 0001-01-01 1000-01-01
 ```
 ### UUID
 `node uuid <name> <namespace>` to generate a UUID-5 (if `name` is not provided is it set to `Date.now() + '-' + Math.random()`)
+### Connect
+`node adapters/connect <adapter1> <params1> <adapter2> <params2>`
+
+A quick and easy way to get some data from one source to another, a simple multitool for the ages.
+
+For adapters types see above and for their parameters see in the code.
+
+Example:
+```sh
+node adapters/connect tcp localhost,55757 serialport COM8,115200
+# > [tcp]: localhost:55757
+# > [serialport]: COM8:115200
+```
 ### Firebase Realtime Database
 `node rtdb mv [--push] <from> <to>` move value  
 `node rtdb cp [--push] <from> <to>` copy value  
