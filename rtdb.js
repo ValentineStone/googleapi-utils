@@ -1,4 +1,5 @@
 'use strict'
+
 const { database } = require('./firebase')
 const { jsonify } = require('./utils')
 const { inspect } = require('util')

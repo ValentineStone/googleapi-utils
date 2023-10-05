@@ -1,3 +1,4 @@
+'use strict'
 
 const symbolsAlpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const symbolsNum = '0123456789'

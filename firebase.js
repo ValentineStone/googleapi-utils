@@ -1,4 +1,5 @@
 'use strict'
+
 require('dotenv/config')
 const firebase = require('firebase-admin')
 firebase.initializeApp({

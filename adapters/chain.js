@@ -1,4 +1,5 @@
 'use strict'
+
 const expand = (arr, expanded = []) => {
   for (const item of arr)
     if (Array.isArray(item))

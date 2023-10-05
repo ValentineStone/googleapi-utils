@@ -1,4 +1,5 @@
 'use strict'
+
 const connect = require('./connect')
 const connectSync = require('./connectSync')
 const measure = require('./measure')

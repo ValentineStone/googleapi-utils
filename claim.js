@@ -1,4 +1,5 @@
 'use strict'
+
 const { auth } = require('./firebase')
 const { jsonify } = require('./utils')
 
